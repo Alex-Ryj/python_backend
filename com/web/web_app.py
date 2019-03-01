@@ -1,6 +1,5 @@
 from flask import Flask
-import properties as props
-from com.amazon.amazon_api import ProductAPI
+import log_config
 
 app = Flask(__name__)
 

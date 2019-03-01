@@ -12,11 +12,12 @@ class Test(unittest.TestCase):
         pass
 
     def test_get_items_search(self):
-        response = self.amz.call(Operation='ItemSearch',
-                                 SearchIndex='All',
-                                 Keywords='drone',
-                                 ResponseGroup='Images,ItemAttributes,Offers'
-                                 )
+
+        response = self.amz.call({'Operation': 'ItemSearch',
+                                 'SearchIndex': 'All',
+                                 'Keywords': 'drone',
+                                 'ResponseGroup': 'Images,ItemAttributes,Offers'
+                                 })
         print(response)
         self.assertTrue('ItemSearchResponse' in str(response))
 

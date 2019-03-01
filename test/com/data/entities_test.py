@@ -1,7 +1,7 @@
 import unittest
 import uuid
 from sqlalchemy.orm import joinedload
-from com.data.entities import db, Item, ItemImage, ItemReview, ItemOffer
+from com.amazon.entities import db, Item, ItemImage, ItemReview, ItemOffer
 import properties as props
 
 

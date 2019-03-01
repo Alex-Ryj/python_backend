@@ -3,10 +3,10 @@ import hashlib
 import logging
 from datetime import datetime
 from parsel import Selector
-from com.data.entities import Item, ItemImage, ItemReview, ItemOffer
+from com.amazon.entities import Item, ItemImage, ItemOffer
 from com.amazon.amazon_api import ProductAPI
 from properties import AWS_PRODUCT_API_REGION
-from com.data.string_utils import removeNonAnsii, str_separator
+from com.data.utils import remove_non_ansii, str_separator
 
 amazon_api = ProductAPI(region=AWS_PRODUCT_API_REGION)
 
@@ -35,13 +35,13 @@ def updateItems(asins, session):
                 selected_item.seller_url = e.css('DetailPageURL::text').extract_first()
                 if (e.css('SalesRank::text').extract_first() is not None):
                     selected_item.sales_rank = int(e.css('SalesRank::text').extract_first())
-                selected_item.producer_info = removeNonAnsii(
+                selected_item.producer_info = remove_non_ansii(
                     str_separator.join(e.css('EditorialReviews EditorialReview Content::text').extract()))
                 selected_item.modified_at = datetime.now()
                 # attributes processing
                 for attr in e.css("ItemAttributes"):
                     selected_item.brand = attr.css('Brand::text').extract_first()
-                    selected_item.features = removeNonAnsii(str_separator.join(attr.css('Feature::text').extract()))
+                    selected_item.features = remove_non_ansii(str_separator.join(attr.css('Feature::text').extract()))
                     selected_item.color = attr.css('Color::text').extract_first()
                     selected_item.name = attr.css('Title::text').extract_first()
                     selected_item.producer = attr.css('Manufacturer::text').extract_first()
