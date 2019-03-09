@@ -31,7 +31,7 @@ class Item(db.Model):
     name = db.deferred(db.Column(db.Text))
     category_1 = db.Column(db.String(50), index=True)
     category_2 = db.Column(db.String(50), index=True)
-    cat_index = Index('cat_index', 'category_1', 'category_2')
+    index_cat = Index('index_cat', 'category_1', 'category_2')
     producer = db.Column(db.String(50))
     real_seller = db.Column(db.String(255))
     features = db.deferred(db.Column(db.Text))
@@ -62,9 +62,9 @@ class Item(db.Model):
 
     def __repr__(self):
         return "<Item(id=%s, name=%s, producer=%s, brand=%s, model=%s, country=%s," \
-               " item_state=%s, category=%s, type_hint=%s)>" % (
+               " item_state=%s, type_hint=%s)>" % (
                    self.item_id, self.name, self.producer, self.brand, self.model, self.country,
-                   self.item_state, self.category, self.type_hint)
+                   self.item_state, self.type_hint)
 
 
 class ItemImage(db.Model):
@@ -123,7 +123,7 @@ class ItemOffer(db.Model):
 def get_attributes(item):
     fields = {}
     for field in [fld for fld in dir(item) if not fld.startswith('_') and fld != 'metadata' and fld != 'query'
-                                              and fld != 'query_class']:
+                                              and fld != 'query_class' and 'index_' not in fld]:
         field_val = item.__getattribute__(field)
         if isinstance(field_val, InstrumentedList):
             sub_items = []
