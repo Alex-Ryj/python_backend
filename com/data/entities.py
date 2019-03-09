@@ -32,7 +32,6 @@ class Item(db.Model):
     category_1 = db.Column(db.String(50), index=True)
     category_2 = db.Column(db.String(50), index=True)
     cat_index = Index('cat_index', 'category_1', 'category_2')
-    category = db.Column(db.String(50), index=True)
     producer = db.Column(db.String(50))
     real_seller = db.Column(db.String(255))
     features = db.deferred(db.Column(db.Text))
@@ -64,8 +63,8 @@ class Item(db.Model):
     def __repr__(self):
         return "<Item(id=%s, name=%s, producer=%s, brand=%s, model=%s, country=%s," \
                " item_state=%s, category=%s, type_hint=%s)>" % (
-                self.id, self.name, self.producer, self.brand, self.model, self.country,
-                self.item_state, self.category, self.type_hint)
+                   self.item_id, self.name, self.producer, self.brand, self.model, self.country,
+                   self.item_state, self.category, self.type_hint)
 
 
 class ItemImage(db.Model):
@@ -74,8 +73,8 @@ class ItemImage(db.Model):
     """
     __tablename__ = 'item_image'
     image_id = db.Column(db.String(50), primary_key=True)
-    item_id = db.Column(db.String(50), db.ForeignKey('item.id'), nullable=False)
-    item = db.relationship('Item',  backref=db.backref('images', lazy=True))
+    item_id = db.Column(db.String(50), db.ForeignKey('item.item_id'), nullable=False)
+    item = db.relationship('Item', backref=db.backref('images', lazy=True))
     url = db.Column(db.String(255))
     image_type = db.Column(db.String(50))
     category = db.Column(db.String(50))
@@ -88,7 +87,7 @@ class ItemReview(db.Model):
     """
     __tablename__ = 'item_review'
     review_id = db.Column(db.String(50), primary_key=True)
-    item_id = db.Column(db.String(50), db.ForeignKey('item.id'), nullable=False)
+    item_id = db.Column(db.String(50), db.ForeignKey('item.item_id'), nullable=False)
     item = db.relationship('Item', backref=db.backref('reviews', lazy=True))
     seller_ref = db.Column(db.String(50), primary_key=True)
     title = db.deferred(db.Column(db.Text))
@@ -103,7 +102,7 @@ class ItemOffer(db.Model):
     """
     __tablename__ = 'item_offer'
     offer_id = db.Column(db.String(250), primary_key=True)  # this should be Amazon Offer Listing ID
-    item_id = db.Column(db.String(50), db.ForeignKey('item.id'), nullable=False)
+    item_id = db.Column(db.String(50), db.ForeignKey('item.item_id'), nullable=False)
     item = db.relationship('Item', backref=db.backref('offers', lazy=True))
     url = db.Column(db.Text)
     price = db.Column(db.Integer)  # expressing the price as int to avoid sqlight possible conversion losses
@@ -123,8 +122,8 @@ class ItemOffer(db.Model):
 
 def get_attributes(item):
     fields = {}
-    for field in [fld for fld in dir(item) if not fld.startswith('_') and fld != 'metadata'
-                                              and fld != 'query' and fld != 'query_class']:
+    for field in [fld for fld in dir(item) if not fld.startswith('_') and fld != 'metadata' and fld != 'query'
+                                              and fld != 'query_class']:
         field_val = item.__getattribute__(field)
         if isinstance(field_val, InstrumentedList):
             sub_items = []
@@ -134,6 +133,3 @@ def get_attributes(item):
         else:
             fields[field] = item.__getattribute__(field)
     return fields
-
-
-
