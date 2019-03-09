@@ -1,11 +1,20 @@
 import unittest
+import json
+from sqlalchemy.ext.declarative import DeclarativeMeta
+from sqlalchemy.orm.collections import InstrumentedList
+from sqlalchemy.inspection import inspect
 import uuid
 from sqlalchemy.orm import joinedload
-from com.amazon.entities import db, Item, ItemImage, ItemReview, ItemOffer
+from com.data.entities import db, Item, ItemImage, ItemReview, ItemOffer, get_attributes
 import properties as props
 
 
 class EntitiesTest(unittest.TestCase):
+
+
+
+ def set_attributes(self, json_str, obj):
+
 
     def setUp(self):
         db.app.config['SQLALCHEMY_DATABASE_URI'] = props.DATABASE_TEST_URI
@@ -24,9 +33,9 @@ class EntitiesTest(unittest.TestCase):
                     country='country',
                     item_state='state'
                     )
-        images = [ItemImage(id=str(uuid.uuid1()), item=item, url="url", image_type="thumbnail", size="20x20px"),
-                  ItemImage(id=str(uuid.uuid1()), item=item, url="url", image_type="thumbnail", size="20x20px")]
-        image = ItemImage(id=str(uuid.uuid1()), url="url", image_type="thumbnail", size="20x20px")
+        images = [ItemImage(id=str(uuid.uuid1()), item=item, url="url", image_type="thumbnail1", size="20x20px"),
+                  ItemImage(id=str(uuid.uuid1()), item=item, url="url", image_type="thumbnail2", size="20x20px")]
+        image = ItemImage(id=str(uuid.uuid1()), url="url", image_type="thumbnail3", size="20x20px")
         item.images.append(image)
         ir1 = ItemReview(id='1', seller_ref='sr1', item=item)
         ir2 = ItemReview(id='2', seller_ref='sr2', item=item)
@@ -43,6 +52,11 @@ class EntitiesTest(unittest.TestCase):
         self.assertEqual(1, db.session.query(ItemReview).filter_by(id='1', seller_ref='sr1').count())
         self.assertIsNone(db.session.query(ItemReview).filter_by(id='x', seller_ref='x').first())
         self.assertEqual(3, len(item.images))
-        full_item = Item.query.options(joinedload('images'))
-        for item in full_item:
-            self.assertEqual(3, len(item.images))
+        # full_item = Item.query.options(joinedload('images'))
+        # for item in full_item:
+        #     self.assertEqual(3, len(item.images))
+        #
+        # print(json.dumps(item.serialize(), default=str))
+        # print(json.dumps(item, cls=self.new_alchemy_encoder(), check_circular=True, default=str))
+        print()
+        print(json.dumps(get_attributes(item),  default=str))

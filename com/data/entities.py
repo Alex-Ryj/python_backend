@@ -1,5 +1,11 @@
+#  Copyright (c) 2019.
+#  Authored by: Alexandre Ryjoukhine
+#  Licensed under MIT
+
 import datetime
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.collections import InstrumentedList
+from sqlalchemy import Index
 from com.web.web_app import app
 import properties as props
 
@@ -16,17 +22,21 @@ class Item(db.Model):
     """
     __tablename__ = 'item'
 
-    id = db.Column(db.String(50), primary_key=True)
-    seller_name = db.Column(db.String(50))
-    seller_ref = db.Column(db.String(50), index=True)
+    item_id = db.Column(db.String(50), primary_key=True)
+    online_seller = db.Column(db.String(50), primary_key=True)
+    seller_ref = db.Column(db.String(50), primary_key=True)
     seller_url = db.Column(db.Text)
     sales_rank = db.Column(db.Integer)
     ean_list = db.Column(db.String(255), index=True)
     name = db.deferred(db.Column(db.Text))
-    category_id = db.Column(db.String(50), index=True)
-    producer = db.Column(db.String(255))
+    category_1 = db.Column(db.String(50), index=True)
+    category_2 = db.Column(db.String(50), index=True)
+    cat_index = Index('cat_index', 'category_1', 'category_2')
+    category = db.Column(db.String(50), index=True)
+    producer = db.Column(db.String(50))
+    real_seller = db.Column(db.String(255))
     features = db.deferred(db.Column(db.Text))
-    producer_part_number = db.Column(db.String(50), index=True)
+    producer_part_number = db.Column(db.String(50))
     producer_info = db.deferred(db.Column(db.Text))
     product_spec = db.deferred(db.Column(db.Text))
     product_group = db.Column(db.String(50), index=True)
@@ -39,12 +49,17 @@ class Item(db.Model):
     country = db.Column(db.String(50))
     produced_till = db.Column(db.DateTime)
     item_state = db.Column(db.String(50))
-    category = db.Column(db.String(50), index=True)
-    type_hint = db.Column(db.String(50), index=True)
+    type_hint = db.Column(db.String(50))
     customized_text = db.Column(db.String(255))  # add some text to this item
     similar_product_seller_refs = db.deferred(db.Column(db.Text))
+    type = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
     modified_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'item',
+        'polymorphic_on': online_seller
+    }
 
     def __repr__(self):
         return "<Item(id=%s, name=%s, producer=%s, brand=%s, model=%s, country=%s," \
@@ -58,7 +73,7 @@ class ItemImage(db.Model):
     a table to store item image references
     """
     __tablename__ = 'item_image'
-    id = db.Column(db.String(50), primary_key=True)
+    image_id = db.Column(db.String(50), primary_key=True)
     item_id = db.Column(db.String(50), db.ForeignKey('item.id'), nullable=False)
     item = db.relationship('Item',  backref=db.backref('images', lazy=True))
     url = db.Column(db.String(255))
@@ -72,7 +87,7 @@ class ItemReview(db.Model):
     reviews of the item         
     """
     __tablename__ = 'item_review'
-    id = db.Column(db.String(50), primary_key=True)
+    review_id = db.Column(db.String(50), primary_key=True)
     item_id = db.Column(db.String(50), db.ForeignKey('item.id'), nullable=False)
     item = db.relationship('Item', backref=db.backref('reviews', lazy=True))
     seller_ref = db.Column(db.String(50), primary_key=True)
@@ -87,7 +102,7 @@ class ItemOffer(db.Model):
     item offer by a merchant   
     """
     __tablename__ = 'item_offer'
-    id = db.Column(db.String(250), primary_key=True)  # this should be Amazon Offer Listing ID
+    offer_id = db.Column(db.String(250), primary_key=True)  # this should be Amazon Offer Listing ID
     item_id = db.Column(db.String(50), db.ForeignKey('item.id'), nullable=False)
     item = db.relationship('Item', backref=db.backref('offers', lazy=True))
     url = db.Column(db.Text)
@@ -104,3 +119,21 @@ class ItemOffer(db.Model):
     valid_till = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
     modified_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+
+
+def get_attributes(item):
+    fields = {}
+    for field in [fld for fld in dir(item) if not fld.startswith('_') and fld != 'metadata'
+                                              and fld != 'query' and fld != 'query_class']:
+        field_val = item.__getattribute__(field)
+        if isinstance(field_val, InstrumentedList):
+            sub_items = []
+            for it in InstrumentedList(field_val):
+                sub_items.append(get_attributes(it))
+            fields[field] = sub_items
+        else:
+            fields[field] = item.__getattribute__(field)
+    return fields
+
+
+

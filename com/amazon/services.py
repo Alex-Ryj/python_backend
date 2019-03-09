@@ -1,14 +1,20 @@
+#  Copyright (c) 2019.
+#  Authored by: Alexandre Ryjoukhine
+#  Licensed under MIT
+
 import uuid
 import hashlib
 import logging
 from datetime import datetime
 from parsel import Selector
-from com.amazon.entities import Item, ItemImage, ItemOffer
+from com.data.entities import Item, ItemImage, ItemOffer
 from com.amazon.amazon_api import ProductAPI
 from properties import AWS_PRODUCT_API_REGION
 from com.data.utils import remove_non_ansii, str_separator
+import log_config
 
 amazon_api = ProductAPI(region=AWS_PRODUCT_API_REGION)
+log = logging.getLogger(__name__)
 
 
 def updateItems(asins, session):
@@ -19,7 +25,7 @@ def updateItems(asins, session):
                                  Keywords='drone',
                                  ResponseGroup='Images,ItemAttributes,Offers'
                                 )
-    logging.info('amazon resp: ' + str(response))
+    log.debug('amazon resp: ' + str(response))
     mydoc = Selector(str(response))
     for e in mydoc.xpath('//items/item'):
         asin = e.xpath('.//asin/text()').extract_first()
@@ -179,4 +185,4 @@ def updateItems(asins, session):
                 session.add_all(offers)
             session.merge(selected_item)
         except Exception as e:
-            logging.exception('exception in item update: ' + asin)
+            log.exception('exception in item update: ' + asin)
