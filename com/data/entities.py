@@ -20,12 +20,12 @@ class Item(db.Model):
     The item that can be sold. It may have a producer, brand, model, size, weight, country of origin
     item_state field reflects the item data condition: INIT_UPLOAD, DETAILS_LOADED, USER_REVIEWS_ADDED
     """
-    __tablename__ = 'item'
+    __tablename__ = 'Item'
 
     item_id = db.Column(db.String(50), primary_key=True)
     online_seller = db.Column(db.String(50), primary_key=True)
     seller_ref = db.Column(db.String(50), primary_key=True)
-    seller_url = db.Column(db.Text)
+    url = db.Column(db.Text)
     sales_rank = db.Column(db.Integer)
     ean_list = db.Column(db.String(255), index=True)
     name = db.deferred(db.Column(db.Text))
@@ -56,15 +56,10 @@ class Item(db.Model):
     modified_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     __mapper_args__ = {
-        'polymorphic_identity': 'item',
+        'polymorphic_identity': 'Item',
         'polymorphic_on': online_seller
     }
 
-    def __repr__(self):
-        return "<Item(id=%s, name=%s, producer=%s, brand=%s, model=%s, country=%s," \
-               " item_state=%s, type_hint=%s)>" % (
-                   self.item_id, self.name, self.producer, self.brand, self.model, self.country,
-                   self.item_state, self.type_hint)
 
 
 class ItemImage(db.Model):
@@ -73,8 +68,8 @@ class ItemImage(db.Model):
     """
     __tablename__ = 'item_image'
     image_id = db.Column(db.String(50), primary_key=True)
-    item_id = db.Column(db.String(50), db.ForeignKey('item.item_id'), nullable=False)
-    item = db.relationship('Item', backref=db.backref('images', lazy=True))
+    item_id = db.Column(db.String(50), db.ForeignKey('Item.item_id'), nullable=False)
+    item = db.relationship('Item', backref=db.backref('ItemImage', lazy=True))
     url = db.Column(db.String(255))
     image_type = db.Column(db.String(50))
     category = db.Column(db.String(50))
@@ -87,8 +82,8 @@ class ItemReview(db.Model):
     """
     __tablename__ = 'item_review'
     review_id = db.Column(db.String(50), primary_key=True)
-    item_id = db.Column(db.String(50), db.ForeignKey('item.item_id'), nullable=False)
-    item = db.relationship('Item', backref=db.backref('reviews', lazy=True))
+    item_id = db.Column(db.String(50), db.ForeignKey('Item.item_id'), nullable=False)
+    item = db.relationship('Item', backref=db.backref('ItemReview', lazy=True))
     seller_ref = db.Column(db.String(50), primary_key=True)
     title = db.deferred(db.Column(db.Text))
     review = db.deferred(db.Column(db.Text))
@@ -102,8 +97,8 @@ class ItemOffer(db.Model):
     """
     __tablename__ = 'item_offer'
     offer_id = db.Column(db.String(250), primary_key=True)  # this should be Amazon Offer Listing ID
-    item_id = db.Column(db.String(50), db.ForeignKey('item.item_id'), nullable=False)
-    item = db.relationship('Item', backref=db.backref('offers', lazy=True))
+    item_id = db.Column(db.String(50), db.ForeignKey('Item.item_id'), nullable=False)
+    item = db.relationship('Item', backref=db.backref('ItemOffer', lazy=True))
     url = db.Column(db.Text)
     price = db.Column(db.Integer)  # expressing the price as int to avoid sqlight possible conversion losses
     price_formated = db.Column(db.String(50))
