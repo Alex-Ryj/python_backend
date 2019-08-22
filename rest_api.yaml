@@ -1,0 +1,115 @@
+swagger: "2.0"
+info:
+  description: "This is a sample  inline pop-ups  server.  You can find out more about it at [http://example.io](http://example.io)"
+  version: "0.0.1"
+  title: "Sample popup server"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:5000"
+basePath: "/v1"
+tags:
+- name: "message"
+  description: "echo message"
+  externalDocs:
+    description: "Find out more"
+    url: "http://example.io"
+- name: "empty post"
+  description: "post empty form"
+schemes:
+- "https"
+- "http"
+paths:
+  /paylod:
+    post:
+      tags:
+      - "post"
+      summary: "Add some post"
+      description: ""
+      operationId: "com.web.api.post_example"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "text/plain"
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "a payload"
+        required: true
+        schema:
+          $ref: "#/definitions/Payload"
+      responses:
+        405:
+          description: "Invalid input"
+
+  /message:
+    get:
+      tags:
+      - "message"
+      summary: "echo message"
+      description: "Multiple status values can be provided with comma separated strings"
+      operationId: "com.web.api.echo_get"
+      produces:
+      - "text/plain"
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "message"
+        in: "query"
+        description: "message in"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid status value"
+
+definitions:
+  Payload:
+    type: "object"
+    required:
+    - "name"
+    - "photoUrls"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+        example: "doggie"
+      photoUrls:
+        type: "array"
+        xml:
+          name: "photoUrl"
+          wrapped: true
+        items:
+          type: "string"
+      status:
+        type: "string"
+        description: ""
+        enum:
+        - "available"
+        - "pending"
+        - "sold"
+    xml:
+      name: "Pet"
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+externalDocs:
+  description: "Find out more about Pop-ups server"
+  url: "http://example.io"
