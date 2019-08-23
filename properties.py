@@ -22,3 +22,6 @@ DEBUG = True
 DATABASE_URI = 'sqlite:///' + os.path.join(_basedir, 'data.db')
 DATABASE_TEST_URI = 'sqlite:///' + os.path.join(_basedir, 'test.db')
 DATABASE_CONNECT_OPTIONS = {}
+
+#files path
+FILES_PATH = os.path.join(_basedir, 'files')
